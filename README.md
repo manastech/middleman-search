@@ -37,6 +37,12 @@ end
 
 For each field, you can specify it's relevance `boost`, and whether to `index` that field's content or not.
 
+You should also `require` the `lunr.min.js` file to your `all.js` file:
+
+```javascript
+//= require lunr.min
+```
+
 ## Acknowledgments
 
 A big thank you to:

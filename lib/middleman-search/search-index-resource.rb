@@ -16,11 +16,8 @@ module Middleman
       end
 
       def render
-        # FIXME: add lunr.min.js as a resource
-        lunr_source = File.expand_path('../../../vendor/lunr.min.js', __FILE__)
-
         cxt = V8::Context.new
-        cxt.load(lunr_source)
+        cxt.load(File.expand_path('../../../vendor/assets/javascripts/lunr.min.js', __FILE__))
         # add new method to lunr index
         cxt.eval('lunr.Index.prototype.indexJson = function () {return JSON.stringify(this);}')
         #Get the lunjs object

@@ -61,7 +61,7 @@ You will typically load the `index` into a lunr index instance, and then use the
 ## Acknowledgments
 
 A big thank you to:
-- @Octo-Labs's @jagthedrummer for his [`middleman-alias`](https://github.com/Octo-Labs/middleman-alias) extension, in which we based for developing this one.
-- @jnovos and @256dpi, for their [`middleman-lunrjs`](https://github.com/jnovos/middleman-lunrjs) and [`middleman-lunr`](https://github.com/256dpi/middleman-lunr) extensions, which served as inspirations for making this one.
-- @olivernn and all [`lunr.js`](http://lunrjs.com/) [contributors](https://github.com/olivernn/lunr.js/graphs/contributors)
+- [Octo-Labs](https://github.com/Octo-Labs)'s [jagthedrummer](https://github.com/jagthedrummer) for his [`middleman-alias`](https://github.com/Octo-Labs/middleman-alias) extension, in which we based for developing this one.
+- [jnovos](https://github.com/jnovos) and [256dpi](https://github.com/256dpi), for their [`middleman-lunrjs`](https://github.com/jnovos/middleman-lunrjs) and [`middleman-lunr`](https://github.com/256dpi/middleman-lunr) extensions, which served as inspirations for making this one.
+- [olivernn](https://github.com/olivernn) and all [`lunr.js`](http://lunrjs.com/) [contributors](https://github.com/olivernn/lunr.js/graphs/contributors)
 - [The Middleman](https://middlemanapp.com/) [team](https://github.com/orgs/middleman/people) and [contributors](https://github.com/middleman/middleman/graphs/contributors)

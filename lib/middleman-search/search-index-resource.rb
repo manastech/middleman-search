@@ -16,12 +16,13 @@ module Middleman
       end
 
       def render
-        cxt = V8::Context.new
-        cxt.load(File.expand_path('../../../vendor/assets/javascripts/lunr.min.js', __FILE__))
-        # add new method to lunr index
-        cxt.eval('lunr.Index.prototype.indexJson = function () {return JSON.stringify(this);}')
-        #Get the lunjs object
-        val = cxt.eval('lunr')
+        # Build js context
+        context = V8::Context.new
+        context.load(File.expand_path('../../../vendor/assets/javascripts/lunr.min.js', __FILE__))
+        context.eval('lunr.Index.prototype.indexJson = function () {return JSON.stringify(this);}')
+
+        # Build lunr based on config
+        lunr = context.eval('lunr')
         lunr_conf = proc do |this|
           this.ref('id')
           @fields.each do |field, opts|
@@ -30,29 +31,35 @@ module Middleman
           end
         end
 
-        idx = val.call(lunr_conf)
-        map = Hash.new
+        # Get lunr index
+        index = lunr.call(lunr_conf)
 
-        @app.sitemap.resources.each_with_index do |resource, index|
-          next if resource.data['index'] == false
-          next unless @resources_to_index.any? {|whitelisted| resource.path.start_with? whitelisted }
+        # Ref to resource map
+        store = Hash.new
 
-          # FIXME: Use config to determine required fields
-          title = resource.data.title || resource.metadata[:options][:title] rescue nil
-          next if title.blank?
+        # Iterate over all resources and build index
+        @app.sitemap.resources.each_with_index do |resource, id|
+          catch(:required) do
+            next if resource.data['index'] == false
+            next unless @resources_to_index.any? {|whitelisted| resource.path.start_with? whitelisted }
 
-          content = resource.render(layout: false)
-          text = Nokogiri::HTML(content).xpath("//text()").text
-          url = resource.url
-          description = resource.data.description || resource.metadata[:options][:description] rescue nil
-          tags = Array(resource.data.tags || []).join(", ")
+            to_index = Hash.new
+            to_store = Hash.new
 
-          # FIXME: Use config to determine what fields are indexed and stored
-          idx.add({title: title, body: text, description: description, tags: tags, id: index})
-          map[index] = { title: title, url: url }
+            @fields.each do |field, opts|
+              value = value_for(resource, field, opts)
+              throw(:required) if value.blank? && opts[:required]
+              to_index[field] = value unless opts[:index] == false
+              to_store[field] = value if opts[:store]
+            end
+
+            index.add(to_index.merge(id: id))
+            store[id] = to_store
+          end
         end
 
-        "{\"index\": #{idx.indexJson()}, \"map\": #{map.to_json}}"
+        # Generate JSON output
+        "{\"index\": #{index.indexJson()}, \"docs\": #{store.to_json}}"
       end
 
       def binary?
@@ -61,6 +68,18 @@ module Middleman
 
       def ignored?
         false
+      end
+
+      def value_for(resource, field, opts={})
+        case field.to_s
+        when 'content'
+          Nokogiri::HTML(resource.render(layout: false)).xpath("//text()").text
+        when 'url'
+          resource.url
+        else
+          value = resource.data.send(field) || resource.metadata.fetch(:options, {}).fetch(:data, {}).fetch(field, nil)
+          value ? Array(value).compact.join(" ") : nil
+        end
       end
     end
   end

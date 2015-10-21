@@ -77,7 +77,7 @@ module Middleman
         when 'url'
           resource.url
         else
-          value = resource.data.send(field) || resource.metadata.fetch(:options, {}).fetch(:data, {}).fetch(field, nil)
+          value = resource.data.send(field) || resource.metadata.fetch(:options, {}).fetch(field, nil)
           value ? Array(value).compact.join(" ") : nil
         end
       end

@@ -9,6 +9,7 @@ module Middleman
         @callback = options[:before_index]
         @pipeline = options[:pipeline]
         @cache_index = options[:cache]
+        @language = options[:language]
         super(store, path)
       end
 
@@ -32,6 +33,13 @@ module Middleman
         # Build js context
         context = V8::Context.new
         context.load(File.expand_path('../../../vendor/assets/javascripts/lunr.min.js', __FILE__))
+
+        if @language != 'en' # English is the default
+          context.load(File.expand_path("../../../vendor/assets/javascripts/lunr.stemmer.support.js", __FILE__))
+          context.load(File.expand_path("../../../vendor/assets/javascripts/lunr.#{@language}.js", __FILE__))
+          lunr_lang = context.eval("lunr.#{@language}")
+        end
+
         context.eval('lunr.Index.prototype.indexJson = function () {return JSON.stringify(this.toJSON());}')
 
         # Register pipeline functions
@@ -54,6 +62,7 @@ module Middleman
           end
 
           # Define fields with boost
+          this.use(lunr_lang) if @language
           @fields.each do |field, opts|
             next if opts[:index] == false
             this.field(field, {:boost => opts[:boost]})

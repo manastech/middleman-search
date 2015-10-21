@@ -9,6 +9,7 @@ module Middleman
     option :index_path, 'search.json', 'Index file path'
     option :pipeline, {}, 'Javascript pipeline functions to use in lunr index'
     option :cache, false, 'Avoid the cache to be rebuilt on every request in development mode'
+    option :language, 'en', 'Language code ("es", "fr") to use when indexing site\'s content'
 
     def manipulate_resource_list(resources)
       resources.push Middleman::Sitemap::SearchIndexResource.new(@app.sitemap, @options[:index_path], @options)

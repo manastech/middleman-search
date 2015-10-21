@@ -39,22 +39,26 @@ module Middleman
 
         # Iterate over all resources and build index
         @app.sitemap.resources.each_with_index do |resource, id|
-          catch(:required) do
-            next if resource.data['index'] == false
-            next unless @resources_to_index.any? {|whitelisted| resource.path.start_with? whitelisted }
+          begin
+            catch(:required) do
+              next if resource.data['index'] == false
+              next unless @resources_to_index.any? {|whitelisted| resource.path.start_with? whitelisted }
 
-            to_index = Hash.new
-            to_store = Hash.new
+              to_index = Hash.new
+              to_store = Hash.new
 
-            @fields.each do |field, opts|
-              value = value_for(resource, field, opts)
-              throw(:required) if value.blank? && opts[:required]
-              to_index[field] = value unless opts[:index] == false
-              to_store[field] = value if opts[:store]
+              @fields.each do |field, opts|
+                value = value_for(resource, field, opts)
+                throw(:required) if value.blank? && opts[:required]
+                to_index[field] = value unless opts[:index] == false
+                to_store[field] = value if opts[:store]
+              end
+
+              index.add(to_index.merge(id: id))
+              store[id] = to_store
             end
-
-            index.add(to_index.merge(id: id))
-            store[id] = to_store
+          rescue => ex
+            logger.warn "Error processing resource for index: #{resource.path}\n#{ex}"
           end
         end
 

@@ -5,12 +5,22 @@ module Middleman
   class SearchExtension < Middleman::Extension
     option :resources, [], 'Paths of resources to index'
     option :fields, {}, 'Fields to index, with their options'
-    option :before_index, nil, 'Callback receiving (to_index, to_store, resource) to execute before indexing a document'
+    option :before_index, nil, 'Callback to execute before indexing a document'
     option :index_path, 'search.json', 'Index file path'
+    option :pipeline, {}, 'Javascript pipeline functions to use in lunr index'
 
     def manipulate_resource_list(resources)
       resources.push Middleman::Sitemap::SearchIndexResource.new(@app.sitemap, @options[:index_path], @options)
       resources
+    end
+
+    helpers do
+      def lunr_js_pipeline
+        # Thanks http://stackoverflow.com/a/20187415/12791
+        extensions[:search].options[:pipeline].map do |name, function|
+          "lunr.Pipeline.registerFunction(#{function}, '#{name}');"
+        end.join("\n")
+      end
     end
   end
 end

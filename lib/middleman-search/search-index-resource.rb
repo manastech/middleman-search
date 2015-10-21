@@ -20,12 +20,21 @@ module Middleman
         # Build js context
         context = V8::Context.new
         context.load(File.expand_path('../../../vendor/assets/javascripts/lunr.min.js', __FILE__))
+
+        language = 'es'
+        if language
+          context.load(File.expand_path("../../../vendor/assets/javascripts/lunr.stemmer.support.js", __FILE__))
+          context.load(File.expand_path("../../../vendor/assets/javascripts/lunr.#{language}.js", __FILE__))
+          lunr_lang = context.eval("lunr.#{language}")
+        end
+
         context.eval('lunr.Index.prototype.indexJson = function () {return JSON.stringify(this);}')
 
         # Build lunr based on config
         lunr = context.eval('lunr')
         lunr_conf = proc do |this|
           this.ref('id')
+          this.use(lunr_lang) if language
           @fields.each do |field, opts|
             next if opts[:index] == false
             this.field(field, {:boost => opts[:boost]})

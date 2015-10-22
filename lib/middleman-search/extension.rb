@@ -15,7 +15,7 @@ module Middleman
     end
 
     helpers do
-      def lunr_js_pipeline
+      def search_lunr_js_pipeline
         # Thanks http://stackoverflow.com/a/20187415/12791
         extensions[:search].options[:pipeline].map do |name, function|
           "lunr.Pipeline.registerFunction(#{function}, '#{name}');"

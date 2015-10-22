@@ -94,7 +94,7 @@ This will register the `tildes` function in the lunr pipeline and add it when bu
 
 Note that if you add a function to the pipeline, it will also be loaded when de-serialising the index, and lunr will fail with an `Cannot load un-registered function: tildes` error if it has not been re-registered. You can either register them manually, or simply include the following in a `.js.erb` file to be executed __before__ loading the index:
 ```erb
-<%= lunr_js_pipeline %>
+<%= search_lunr_js_pipeline %>
 ```
 
 

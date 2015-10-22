@@ -112,6 +112,33 @@ You should also `require` the `lunr.min.js` file in your main sprockets javascri
 //= require lunr.min
 ```
 
+### Asset pipeline
+
+The Middleman pipeline does not include `json` files by default, but you can easily modify this by adding `.json` to the `exts` option of the corresponding extensions, such as `gzip` and `asset_hash`:
+
+```ruby
+activate :asset_hash do |asset_hash|
+  asset_hash.exts << '.json'
+end
+```
+
+Note that if you run the index json file through the asset hash extension, you will need to retrieve the actual destination URL when loading the file in the browser for searching, using the `search_index_path` view helper:
+
+```javascript
+var lunrIndex = null;
+var lunrData  = null;
+
+// Download index data
+$.ajax({
+  url: "<%= search_index_path %>",
+  cache: true,
+  method: 'GET',
+  success: function(data) {
+    lunrData = data;
+    lunrIndex = lunr.Index.load(lunrData.index);
+  }
+});
+```
 
 ## Acknowledgments
 

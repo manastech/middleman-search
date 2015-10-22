@@ -21,6 +21,10 @@ module Middleman
           "lunr.Pipeline.registerFunction(#{function}, '#{name}');"
         end.join("\n")
       end
+
+      def search_index_path
+        "/" + sitemap.find_resource_by_path(extensions[:search].options[:index_path]).destination_path
+      end
     end
   end
 end

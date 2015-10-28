@@ -8,6 +8,7 @@ module Middleman
         @fields = options[:fields]
         @callback = options[:before_index]
         @pipeline = options[:pipeline]
+        @cache_index = options[:cache]
         super(store, path)
       end
 
@@ -20,6 +21,14 @@ module Middleman
       end
 
       def render
+        if @cache_index
+          @index ||= build_index
+        else
+          build_index
+        end
+      end
+
+      def build_index
         # Build js context
         context = V8::Context.new
         context.load(File.expand_path('../../../vendor/assets/javascripts/lunr.min.js', __FILE__))

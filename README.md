@@ -21,7 +21,7 @@ Or install it yourself as:
 You need to activate the module in your `config.rb`, telling the extension how to index your resources:
 
 ```ruby
-activate :search do
+activate :search do |search|
 
   search.resources = ['blog/', 'index.html', 'contactus/index.html']
 
@@ -54,7 +54,7 @@ All fields values are retrieved from the resource `data` (i.e. its frontmatter),
 You can fully customise the content to be indexed and stored per resource by defining a `before_index` callback:
 
 ```ruby
-activate :search do
+activate :search do |search|
   search.before_index = Proc.new do |to_index, to_store, resource|
     if author = resource.data.author
       to_index[:author] = data.authors[author].name
@@ -70,7 +70,7 @@ This option accepts a callback that will be executed for each resource, and will
 In some cases, you may want to add new function to the lunr pipeline, both for creating the indexing and then for searching. You can do this by providing a `pipeline` hash with function names and body, for example:
 
 ```ruby
-activate :search do
+activate :search do |search|
   search.pipeline = {
     tildes: <<-JS
       function(token, tokenIndex, tokens) {

@@ -20,7 +20,7 @@ module Middleman
         path
       end
 
-      def render
+      def render(opts={}, locs={})
         if @cache_index
           @index ||= build_index
         else

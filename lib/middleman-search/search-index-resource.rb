@@ -108,9 +108,8 @@ module Middleman
       def value_for(resource, field, opts={})
         case field.to_s
         when 'content'
-          html = resource.render(layout: false) do
-            self.current_path = resource.path
-          end
+
+          html = resource.render( { :layout => false }, { :current_path => resource.path } )
           Nokogiri::HTML(html).xpath("//text()").text
         when 'url'
           resource.url

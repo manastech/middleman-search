@@ -106,7 +106,7 @@ The generated index file contains a JSON object with two properties:
 
 You will typically load the `index` into a lunr index instance, and then use the `docs` map to look up the returned value and present it to the user.
 
-You should also `require` the `lunr.min.js` file in your main sprockets javascript file to be able to actually load the index:
+You should also `require` the `lunr.min.js` file in your main sprockets javascript file (if using the asset pipeline) to be able to actually load the index:
 
 ```javascript
 //= require lunr.min
@@ -114,7 +114,7 @@ You should also `require` the `lunr.min.js` file in your main sprockets javascri
 
 ### Asset pipeline
 
-The Middleman pipeline does not include `json` files by default, but you can easily modify this by adding `.json` to the `exts` option of the corresponding extensions, such as `gzip` and `asset_hash`:
+The Middleman pipeline (if enabled) does not include `json` files by default, but you can easily modify this by adding `.json` to the `exts` option of the corresponding extensions, such as `gzip` and `asset_hash`:
 
 ```ruby
 activate :asset_hash do |asset_hash|

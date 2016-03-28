@@ -89,7 +89,7 @@ module Middleman
               store[id] = to_store
             end
           rescue => ex
-            logger.warn "Error processing resource for index: #{resource.path}\n#{ex}\n #{ex.backtrace.join("\n ")}"
+            @app.logger.warn "Error processing resource for index: #{resource.path}\n#{ex}\n #{ex.backtrace.join("\n ")}"
           end
         end
 

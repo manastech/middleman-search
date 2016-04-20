@@ -24,7 +24,7 @@ module Middleman
       end
 
       def search_index_path
-        "/" + sitemap.find_resource_by_path(extensions[:search].options[:index_path]).destination_path
+        app.config[:http_prefix] + sitemap.find_resource_by_path(extensions[:search].options[:index_path]).destination_path
       end
     end
   end

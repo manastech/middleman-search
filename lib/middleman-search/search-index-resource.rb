@@ -10,6 +10,7 @@ module Middleman
         @pipeline = options[:pipeline]
         @cache_index = options[:cache]
         @language = options[:language]
+        @lunr_dirs = options[:lunr_dirs] + [File.expand_path("../../../vendor/assets/javascripts/", __FILE__)]
         super(store, path)
       end
 
@@ -32,11 +33,11 @@ module Middleman
       def build_index
         # Build js context
         context = V8::Context.new
-        context.load(File.expand_path('../../../vendor/assets/javascripts/lunr.min.js', __FILE__))
+        context.load(lunr_resource('lunr.js'))
 
         if @language != 'en' # English is the default
-          context.load(File.expand_path("../../../vendor/assets/javascripts/lunr.stemmer.support.js", __FILE__))
-          context.load(File.expand_path("../../../vendor/assets/javascripts/lunr.#{@language}.js", __FILE__))
+          context.load(lunr_resource("lunr.stemmer.support.js"))
+          context.load(lunr_resource("lunr.#{@language}.js"))
           lunr_lang = context.eval("lunr.#{@language}")
         end
 
@@ -126,6 +127,20 @@ module Middleman
           value = resource.data.send(field) || resource.metadata.fetch(:options, {}).fetch(field, nil)
           value ? Array(value).compact.join(" ") : nil
         end
+      end
+
+      private
+
+      def minified_path(resource_name)
+        return resource_name if resource_name.end_with? '.min.js'
+        return resource_name unless resource_name.end_with? '.js'
+        resource_name.sub(/(.*)\.js$/,'\1.min.js')
+      end
+
+      def lunr_resource(resource_name)
+        @lunr_dirs.flat_map do |dir|
+          [File.join(dir, minified_path(resource_name)), File.join(dir, resource_name)]
+        end.detect { |file| File.exists? file } or raise "Couldn't find #{resource_name} nor #{minified_path(resource_name)} in #{@lunr_dirs.map {|dir| File.absolute_path dir }.join File::PATH_SEPARATOR}"
       end
     end
   end

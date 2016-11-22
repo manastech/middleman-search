@@ -63,7 +63,7 @@ module Middleman
           end
 
           # Define fields with boost
-          this.use(lunr_lang) if @language
+          this.use(lunr_lang) if @language != 'en'
           @fields.each do |field, opts|
             next if opts[:index] == false
             this.field(field, {:boost => opts[:boost]})

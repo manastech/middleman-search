@@ -122,6 +122,14 @@ You should also `require` the `lunr.min.js` file in your main sprockets javascri
 //= require lunr.min
 ```
 
+If you're using lunr's i18n capabilities, you should also load the Stemmer support and language files (in that order) here:
+
+```javascript
+//= require lunr.min
+//= require lunr.stemmer.support
+//= require lunr.es
+```
+
 ### Asset pipeline
 
 The Middleman pipeline (if enabled) does not include `json` files by default, but you can easily modify this by adding `.json` to the `exts` option of the corresponding extensions, such as `gzip` and `asset_hash`:

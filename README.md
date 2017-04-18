@@ -53,6 +53,22 @@ All fields values are retrieved from the resource `data` (i.e. its frontmatter),
 - `url` which is the actual resource url
 - `content` the text extracted from the rendered resource, without including its layout
 
+You can then query the index from Javascript via the `lunrIndex` object (see [Index file](#index-file) for more info):
+
+```javascript
+var max_search_entries = 50;
+
+var result = []; //initialize empty array
+
+lunrIndex.search(request.term).forEach( function (item, index) {
+  if ( index < max_search_entries ) {
+    result.push(lunrData.docs[item.ref]);
+  }
+});
+```
+
+(Thanks [@Jeepler](https://github.com/Jeepler) [for adapting](https://github.com/manastech/middleman-search/issues/11#issuecomment-220262546) the lodash v3 code [we used to use at Manas](https://manas.tech/blog/2015/10/22/middleman-search-client-side-search-in-your-middleman-site.html))
+
 ### i18n
 
 This gem includes assets for alternate languages as provided by [MihaiValentin/lunr-languages](https://github.com/MihaiValentin/lunr-languages). Please refer to that repository for a list of the languages available.

@@ -3,6 +3,9 @@ require 'middleman-search/search-index-resource'
 
 module Middleman
   class SearchExtension < Middleman::Extension
+
+    self.supports_multiple_instances = true
+
     option :resources, [], 'Paths of resources to index'
     option :fields, {}, 'Fields to index, with their options'
     option :before_index, nil, 'Callback to execute before indexing a document'

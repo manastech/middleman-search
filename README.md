@@ -2,6 +2,14 @@
 
 LunrJS-based search for Middleman.
 
+> **Project in stand-by mode**
+>
+> Hi there! We've created this gem at [Manas.Tech](https://manas.tech/) to [enable search on our own website](https://manas.tech/blog/2015/10/22/middleman-search-client-side-search-in-your-middleman-site.html), but then [redesigned it](https://manas.tech/blog/2016/09/14/a-webiste-13-years-in-the-making.html) and dropped the search functionality for the time being. So we aren't actively developing/supporting the gem, at least for now.
+>
+> In the mean time, if you need any feature that we're not supporting yet, please check the [network graph](https://github.com/manastech/middleman-search/network) to look for a fork that may provide what you need. We haven't tried any other fork, so we're not blessing any one of them - but we do appreciate that people is doing what we don't have time to do at the moment 👍
+>
+> Feel free to star/suscribe to this repo - re-adding search to our site is something that we want to make happen, so _eventually_ we will resume the gem development, hopefully. Wish to, at least ¯\\_(ツ)\_/¯
+
 ## Installation
 
 Add this line to your application's Gemfile:

@@ -10,7 +10,11 @@ module Middleman
         @pipeline = options[:pipeline]
         @cache_index = options[:cache]
         @language = options[:language]
-        @lunr_dirs = options[:lunr_dirs] + [File.expand_path("../../../vendor/assets/javascripts/", __FILE__)]
+        @node_modules = File.join(store.app.root, 'node_modules')
+        @lunr_dirs = options[:lunr_dirs] + [
+            File.join(@node_modules, 'lunr'),
+            File.join(@node_modules, 'lunr-languages'),
+            File.expand_path("../../../vendor/assets/javascripts/", __FILE__)]
         super(store, path)
       end
 
@@ -22,7 +26,7 @@ module Middleman
         path
       end
 
-      def render(opts={}, locs={})
+      def render(opts = {}, locs = {})
         if @cache_index
           @index ||= build_index
         else
@@ -31,16 +35,18 @@ module Middleman
       end
 
       def build_index
-        # Build js context
-        libs = []
-        libs << lunr_resource('lunr.js')
+        source = []
+        source << <<~JS
+          process.env.NODE_PATH = "#{@node_modules}";
+          require("module").Module._initPaths();
+        JS
+        source << "var lunr = require('lunr')";
         if @language != 'en' # English is the default
-          libs << lunr_resource("lunr.stemmer.support.js")
-          libs << lunr_resource("lunr.#{@language}.js")
+          source << <<~JS
+            require("lunr-languages/lunr.stemmer.support")(lunr);
+            require("lunr-languages/lunr.#{@language}")(lunr);
+          JS
         end
-
-        source = libs.map { |lib| File.read(lib, mode: "rb:UTF-8") }
-        source << "lunr.Index.prototype.indexJson = function () {return JSON.stringify(this.toJSON());};"
 
         @pipeline.each do |name, function|
           source << "lunr.Pipeline.registerFunction((#{function}), '#{name}');"
@@ -66,9 +72,6 @@ module Middleman
           source << "this.field('#{field}', { boost: #{opts[:boost]}});"
         end
 
-        source << "});"
-
-
         # Ref to resource map
         store = Hash.new
 
@@ -77,7 +80,7 @@ module Middleman
           begin
             catch(:skip) do
               next if resource.data['index'] == false
-              next unless @resources_to_index.any? {|whitelisted| resource.path.start_with? whitelisted }
+              next unless @resources_to_index.any? { |whitelisted| resource.path.start_with? whitelisted }
 
               to_index = Hash.new
               to_store = Hash.new
@@ -91,7 +94,7 @@ module Middleman
 
               @callback.call(to_index, to_store, resource) if @callback
 
-              source << "lunr.middlemanSearchIndex.add(#{to_index.merge(id: id).to_json});"
+              source << "this.add(#{to_index.merge(id: id).to_json});"
 
               store[id] = to_store
             end
@@ -99,11 +102,28 @@ module Middleman
             @app.logger.warn "Error processing resource for index: #{resource.path}\n#{ex}\n #{ex.backtrace.join("\n ")}"
           end
         end
-
+        source << "});"
+        
         # Generate JSON output
-        context = ExecJS.compile(source.join("\n"))
-        json = context.eval('lunr.middlemanSearchIndex.indexJson()')
-        "{\"index\": #{json}, \"docs\": #{store.to_json}}"
+        with_node_runtime do
+          context = ExecJS.compile(source.join("\n"))
+          json = context.eval('JSON.stringify(lunr.middlemanSearchIndex)')
+          "{\"index\": #{json}, \"docs\": #{store.to_json}}"
+        end
+      end
+
+      def with_node_runtime
+        old = ExecJS.runtime
+        ExecJS.runtime = ExecJS::ExternalRuntime.new(
+            name: "Node.js (V8) (with require)",
+            command: ["nodejs", "node"],
+            runner_path: File.join(File.expand_path("../../../vendor/assets/javascripts/", __FILE__),
+                                   "node_runner_with_require.js"),
+            encoding: 'UTF-8'
+        )
+        yield
+      ensure
+        ExecJS.runtime = old
       end
 
       def binary?
@@ -114,11 +134,11 @@ module Middleman
         false
       end
 
-      def value_for(resource, field, opts={})
+      def value_for(resource, field, opts = {})
         case field.to_s
         when 'content'
 
-          html = resource.render( { :layout => false }, { :current_path => resource.path } )
+          html = resource.render({ :layout => false }, { :current_path => resource.path })
           Nokogiri::HTML(html).xpath("//text()").text
         when 'url'
           resource.url
@@ -126,6 +146,7 @@ module Middleman
           value = resource.data.send(field) || resource.metadata.fetch(:options, {}).fetch(field, nil)
           value ? Array(value).compact.join(" ") : nil
         end
+
       end
 
       private
@@ -133,14 +154,15 @@ module Middleman
       def minified_path(resource_name)
         return resource_name if resource_name.end_with? '.min.js'
         return resource_name unless resource_name.end_with? '.js'
-        resource_name.sub(/(.*)\.js$/,'\1.min.js')
+        resource_name.sub(/(.*)\.js$/, '\1.min.js')
       end
 
       def lunr_resource(resource_name)
         @lunr_dirs.flat_map do |dir|
           [File.join(dir, minified_path(resource_name)), File.join(dir, resource_name)]
-        end.detect { |file| File.exists? file } or raise "Couldn't find #{resource_name} nor #{minified_path(resource_name)} in #{@lunr_dirs.map {|dir| File.absolute_path dir }.join File::PATH_SEPARATOR}"
+        end.detect { |file| File.exists? file } or raise "Couldn't find #{resource_name} nor #{minified_path(resource_name)} in #{@lunr_dirs.map { |dir| File.absolute_path dir }.join File::PATH_SEPARATOR}"
       end
     end
+
   end
 end

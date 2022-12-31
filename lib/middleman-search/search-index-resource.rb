@@ -140,7 +140,7 @@ module Middleman
       def lunr_resource(resource_name)
         @lunr_dirs.flat_map do |dir|
           [File.join(dir, minified_path(resource_name)), File.join(dir, resource_name)]
-        end.detect { |file| File.exists? file } or raise "Couldn't find #{resource_name} nor #{minified_path(resource_name)} in #{@lunr_dirs.map {|dir| File.absolute_path dir }.join File::PATH_SEPARATOR}"
+        end.detect { |file| File.exist? file } or raise "Couldn't find #{resource_name} nor #{minified_path(resource_name)} in #{@lunr_dirs.map {|dir| File.absolute_path dir }.join File::PATH_SEPARATOR}"
       end
     end
   end
